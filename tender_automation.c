@@ -77,6 +77,7 @@ typedef struct TenderItem {
 #define MAX_DOWNLOAD_BYTES     (4U * 1024U * 1024U)
 #define MAX_JSZBTB_PAGES       3
 #define MAX_JSGGZY_PAGES       3
+#define MAX_SHANDONG_PAGES     3
 
 #define INTERNET_OPEN_TYPE_PRECONFIG_LOCAL 0
 #define INTERNET_SERVICE_HTTP_LOCAL        3
@@ -2313,6 +2314,22 @@ static BOOL TenderCandidateExists(const TenderItem *items, int count, const char
     return FALSE;
 }
 
+static BOOL TenderCandidateTitleExists(const TenderItem *items, int count, const char *title) {
+    int i;
+
+    if (items == NULL || title == NULL || title[0] == '\0') {
+        return FALSE;
+    }
+
+    for (i = 0; i < count; ++i) {
+        if (strcmp(items[i].title, title) == 0) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 static void AddTenderCandidate(
     const char *sourceUrl,
     const char *itemUrl,
@@ -2371,6 +2388,14 @@ static int IsJsggzyUrl(const char *url) {
     }
 
     return AsciiStrIstr(url, "jsggzy.jszwfw.gov.cn") != NULL;
+}
+
+static int IsShandongGgzyUrl(const char *url) {
+    if (url == NULL) {
+        return 0;
+    }
+
+    return AsciiStrIstr(url, "ggzyjyzx.shandong.gov.cn") != NULL;
 }
 
 static const char *FindJsonFieldColon(const char *start, const char *end, const char *field) {
@@ -2527,6 +2552,167 @@ static void UrlEncodeUtf8(const char *src, char *dst, size_t dstSize) {
     }
 
     dst[o] = '\0';
+}
+
+static int HexDigitValue(int ch) {
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    }
+    if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    }
+    if (ch >= 'A' && ch <= 'F') {
+        return ch - 'A' + 10;
+    }
+    return -1;
+}
+
+static void PercentDecodeUrlComponent(const char *src, char *dst, size_t dstSize) {
+    size_t o = 0;
+
+    if (dst == NULL || dstSize == 0) {
+        return;
+    }
+    dst[0] = '\0';
+
+    if (src == NULL) {
+        return;
+    }
+
+    while (*src != '\0' && o + 1U < dstSize) {
+        if (*src == '%' && isxdigit((unsigned char)src[1]) && isxdigit((unsigned char)src[2])) {
+            int hi = HexDigitValue((unsigned char)src[1]);
+            int lo = HexDigitValue((unsigned char)src[2]);
+            if (hi >= 0 && lo >= 0) {
+                dst[o++] = (char)((hi << 4) | lo);
+                src += 3;
+                continue;
+            }
+        }
+
+        dst[o++] = (*src == '+') ? ' ' : *src;
+        ++src;
+    }
+
+    dst[o] = '\0';
+}
+
+static BOOL DecodeJsonStringValue(const char **cursor, const char *end, char *out, size_t outSize) {
+    const char *p;
+    size_t o = 0;
+
+    if (cursor == NULL || *cursor == NULL || out == NULL || outSize == 0) {
+        return FALSE;
+    }
+
+    out[0] = '\0';
+    p = *cursor;
+    if (end == NULL) {
+        end = p + strlen(p);
+    }
+
+    if (p >= end || *p != '"') {
+        return FALSE;
+    }
+    ++p;
+
+    while (p < end && *p != '\0') {
+        unsigned char ch = (unsigned char)*p++;
+
+        if (ch == '"') {
+            out[o] = '\0';
+            *cursor = p;
+            return TRUE;
+        }
+
+        if (ch == '\\' && p < end) {
+            ch = (unsigned char)*p++;
+            switch (ch) {
+            case '"':
+            case '\\':
+            case '/':
+                if (o + 1U < outSize) {
+                    out[o++] = (char)ch;
+                }
+                break;
+            case 'b':
+            case 'f':
+            case 'n':
+            case 'r':
+            case 't':
+                if (o + 1U < outSize) {
+                    out[o++] = ' ';
+                }
+                break;
+            case 'u':
+                if (p + 4 <= end) {
+                    int h0 = HexDigitValue((unsigned char)p[0]);
+                    int h1 = HexDigitValue((unsigned char)p[1]);
+                    int h2 = HexDigitValue((unsigned char)p[2]);
+                    int h3 = HexDigitValue((unsigned char)p[3]);
+                    if (h0 >= 0 && h1 >= 0 && h2 >= 0 && h3 >= 0) {
+                        unsigned long cp = ((unsigned long)h0 << 12) |
+                                           ((unsigned long)h1 << 8) |
+                                           ((unsigned long)h2 << 4) |
+                                           (unsigned long)h3;
+                        AppendUtf8Codepoint(out, outSize, &o, cp);
+                        p += 4;
+                    }
+                }
+                break;
+            default:
+                if (o + 1U < outSize) {
+                    out[o++] = (char)ch;
+                }
+                break;
+            }
+            continue;
+        }
+
+        if (o + 1U < outSize) {
+            out[o++] = (char)ch;
+        }
+    }
+
+    out[o] = '\0';
+    *cursor = p;
+    return out[0] != '\0';
+}
+
+static void ExtractShandongActualUrl(const char *href, char *outUrl, size_t outSize) {
+    const char *urlParam;
+    char encoded[MAX_URL_LEN];
+    size_t n = 0;
+
+    if (outUrl == NULL || outSize == 0) {
+        return;
+    }
+    outUrl[0] = '\0';
+
+    if (href == NULL || href[0] == '\0') {
+        return;
+    }
+
+    urlParam = AsciiStrIstr(href, "url=");
+    if (urlParam != NULL) {
+        urlParam += 4;
+        while (urlParam[n] != '\0' && urlParam[n] != '&' && n + 1U < sizeof(encoded)) {
+            encoded[n] = urlParam[n];
+            ++n;
+        }
+        encoded[n] = '\0';
+        PercentDecodeUrlComponent(encoded, outUrl, outSize);
+        if (StartsWithHttpScheme(outUrl)) {
+            return;
+        }
+    }
+
+    ResolveHrefUrl(
+        "https://ggzyjyzx.shandong.gov.cn/jsearchfront/search.do",
+        href,
+        outUrl,
+        outSize
+    );
 }
 
 static int ExtractJsggzyItemsFromJson(
@@ -2856,6 +3042,189 @@ static BOOL CrawlJszbtbApi(const char *sourceUrl, TenderItem *newItems, int *new
                 ExtractJszbtbItemsFromJson(json, sourceUrl, endpoints[e].detailType, newItems, newCount);
                 free(json);
             }
+        }
+    }
+
+    if (successCount == 0 && failedCount != NULL) {
+        *failedCount += 1;
+    }
+
+    return successCount > 0;
+}
+
+static void ExtractShandongTitleText(const char *start, const char *end, char *title, size_t titleSize) {
+    char raw[2048];
+    size_t rawLen = 0;
+    const char *p;
+    int inTag = 0;
+
+    if (title == NULL || titleSize == 0) {
+        return;
+    }
+    title[0] = '\0';
+
+    if (start == NULL || end == NULL || end <= start) {
+        return;
+    }
+
+    for (p = start; p < end && rawLen + 1U < sizeof(raw); ++p) {
+        if (*p == '<') {
+            inTag = 1;
+            continue;
+        }
+
+        if (*p == '>') {
+            inTag = 0;
+            continue;
+        }
+
+        if (!inTag) {
+            raw[rawLen++] = *p;
+        }
+    }
+
+    raw[rawLen] = '\0';
+    NormalizeTitle(raw, title, titleSize);
+}
+
+static int ScanShandongResultHtml(const char *sourceUrl, const char *html, TenderItem *newItems, int *newCount) {
+    const char *p;
+    int matchedLinks = 0;
+
+    if (sourceUrl == NULL || html == NULL || newItems == NULL || newCount == NULL) {
+        return 0;
+    }
+
+    p = html;
+    while (*p != '\0' && *newCount < MAX_ITEMS) {
+        const char *aStart;
+        const char *tagEnd;
+        const char *aEnd;
+        char href[MAX_URL_LEN];
+        char itemUrl[MAX_URL_LEN];
+        char title[512];
+
+        aStart = AsciiStrIstr(p, "<a");
+        if (aStart == NULL) {
+            break;
+        }
+
+        tagEnd = strchr(aStart, '>');
+        if (tagEnd == NULL) {
+            break;
+        }
+
+        aEnd = AsciiStrIstr(tagEnd + 1, "</a>");
+        if (aEnd == NULL) {
+            p = tagEnd + 1;
+            continue;
+        }
+
+        ExtractHrefFromAnchorTag(aStart, tagEnd, href, sizeof(href));
+        ExtractShandongTitleText(tagEnd + 1, aEnd, title, sizeof(title));
+
+        if (title[0] != '\0' &&
+            !IsIgnoredHref(href) &&
+            ContainsTenderKeyword(title) &&
+            IsActiveTenderInfo(title, NULL)) {
+            ExtractShandongActualUrl(href, itemUrl, sizeof(itemUrl));
+            if (itemUrl[0] != '\0') {
+                if (!TenderCandidateTitleExists(newItems, *newCount, title)) {
+                    AddTenderCandidate(sourceUrl, itemUrl, title, newItems, newCount);
+                    matchedLinks += 1;
+                }
+            }
+        }
+
+        p = aEnd + 4;
+    }
+
+    return matchedLinks;
+}
+
+static int ExtractShandongItemsFromJson(
+    const char *json,
+    const char *sourceUrl,
+    TenderItem *newItems,
+    int *newCount
+) {
+    const char *p;
+    const char *end;
+    const char *arrayStart;
+    int addedBefore;
+
+    if (json == NULL || sourceUrl == NULL || newItems == NULL || newCount == NULL) {
+        return 0;
+    }
+
+    addedBefore = *newCount;
+    p = strstr(json, "\"result\"");
+    if (p == NULL) {
+        return 0;
+    }
+
+    arrayStart = strchr(p, '[');
+    if (arrayStart == NULL) {
+        return 0;
+    }
+
+    p = arrayStart + 1;
+    end = json + strlen(json);
+
+    while (p < end && *p != '\0' && *newCount < MAX_ITEMS) {
+        char resultHtml[65536];
+
+        while (p < end && (*p == ',' || isspace((unsigned char)*p))) {
+            ++p;
+        }
+
+        if (p >= end || *p == ']') {
+            break;
+        }
+
+        if (*p != '"') {
+            ++p;
+            continue;
+        }
+
+        if (DecodeJsonStringValue(&p, end, resultHtml, sizeof(resultHtml))) {
+            ScanShandongResultHtml(sourceUrl, resultHtml, newItems, newCount);
+        }
+    }
+
+    return *newCount - addedBefore;
+}
+
+static BOOL CrawlShandongGgzyApi(const char *sourceUrl, TenderItem *newItems, int *newCount, int *failedCount) {
+    int successCount = 0;
+    int k;
+    int page;
+
+    for (k = 0; k < g_keywords.count; ++k) {
+        for (page = 1; page <= MAX_SHANDONG_PAGES && *newCount < MAX_ITEMS; ++page) {
+            char apiUrl[2048];
+            char encodedKeyword[512];
+            char *json = NULL;
+
+            UrlEncodeUtf8(g_keywords.words[k], encodedKeyword, sizeof(encodedKeyword));
+            snprintf(
+                apiUrl,
+                sizeof(apiUrl),
+                "https://ggzyjyzx.shandong.gov.cn/jsearchfront/interfaces/cateSearch.do"
+                "?websiteid=370000000000110&q=%s&p=%d&pg=20&cateid=15503"
+                "&pos=title%%2Ccontent%%2C_default_search&pq=&oq=&eq=&begin=&end=&tpl=1164",
+                encodedKeyword,
+                page
+            );
+            apiUrl[sizeof(apiUrl) - 1U] = '\0';
+
+            if (!FetchUrlUtf8(apiUrl, &json)) {
+                continue;
+            }
+
+            ++successCount;
+            ExtractShandongItemsFromJson(json, sourceUrl, newItems, newCount);
+            free(json);
         }
     }
 
@@ -3945,6 +4314,10 @@ static BOOL CrawlConfiguredUrls(char urls[MAX_URLS][MAX_URL_LEN], int urlCount, 
         }
 
         if (IsJszbtbUrl(urls[i]) && CrawlJszbtbApi(urls[i], newItems, newCount, failedCount)) {
+            continue;
+        }
+
+        if (IsShandongGgzyUrl(urls[i]) && CrawlShandongGgzyApi(urls[i], newItems, newCount, failedCount)) {
             continue;
         }
 
