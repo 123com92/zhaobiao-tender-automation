@@ -1,0 +1,22 @@
+# Extracted local toolchain. Restore it with setup_toolchain.cmd.
+tools/w64devkit/
+
+# Visual Studio / MSVC outputs
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# Temporary spreadsheet/debug artifacts
+debug_*.xlsx
+excel_reference.xlsx
+handmade_min.xlsx
+tender_report_test.xlsx
+
+# Runtime data is written to D:\TenderDocs, not this repository.
+history_log.txt
+schedule.txt
+sites.txt
+keywords.txt
+*.log

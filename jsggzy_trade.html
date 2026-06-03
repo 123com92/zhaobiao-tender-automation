@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+         <meta name="renderer" content="webkit">
+    <meta name="SiteName" content="江苏省公共资源交易网">
+<meta name="SiteDomain" content="jsggzy.jszwfw.gov.cn" >
+            <meta name="SiteIDCode" content="3200000099">
+            <meta name="ColumnName" content="交易信息">
+            <meta name="ColumnDescription" content="交易信息">
+            <meta name="ColumnKeywords" content="交易信息">
+            <meta name="ColumnType" content="交易信息">
+        <!-- 页面css -->
+        <link rel="stylesheet" href="/js/lib/chosen/chosen.css" />
+        <link rel="stylesheet" href="/js/lib/pagination/mricode.pagination.css" />
+        <link rel="stylesheet" href="/js/lib/layuiV2.9.2/css/layui.css" />
+        <link rel="stylesheet" href="/css/common.css?1" />
+        <link rel="stylesheet" href="/css/trading.css?1" />
+        <!-- jquery -->
+        <script src="/js/lib/jquery.min.js"></script>
+        <!-- 页面标题 -->
+        <title>江苏省公共资源交易网</title>
+		
+    
+   <link rel="stylesheet" href="/css/webBuilderCommonGray.css"></head>
+
+    <body>
+        <!-- header -->
+        <div id="head"></div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="location">
+               
+					
+					<a href="/">首页</a>
+					
+					&nbsp;/&nbsp;<span id="viewGuid" value="003" >交易信息</span></div>
+            <div class="content-wrapper container contact-page">
+                <!-- 右侧内容区 -->
+                <div class="contact-content">
+                    <div class="contact-main">
+                        <!-- 筛选区域 -->
+                        <div class="filter-area">
+                            <!-- 第一行：发布时间 + 时间区间 -->
+                            <div class="filter-row">
+                                <div class="filter-item filter-item-time" id="fbdate">
+                                    <span class="filter-label">发布时间：</span>
+                                    <div class="type-buttons" data-type="timeRange" >
+                                        <button class="type-btn active" data-value="0">当天</button>
+                                        <button class="type-btn" data-value="3">近三天</button>
+                                        <button class="type-btn" data-value="10">近十天</button>
+                                        <button class="type-btn" data-value="30">近一月</button>
+                                        <button class="type-btn" data-value="180">近三月</button>
+                                    </div>
+                                    <div class="time-range-wrapper">
+                                        <span class="time-range-label">时间区间：</span>
+                                        <div class="date-range" id="date-range">
+                                            <input type="text" class="date-input" id="startDate" placeholder="开始日期" readonly />
+                                            <span class="date-separator">—</span>
+                                            <input type="text" class="date-input" id="endDate" placeholder="结束日期" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 第二行：数据来源 -->
+                            <div class="filter-row">
+                                <div class="filter-item">
+                                    <span class="filter-label">数据来源：</span>
+                                    <div class="type-buttons" data-type="dataSource">
+                                        <button class="type-btn active" data-value="省平台">省平台</button>
+                                        <button class="type-btn" data-value="其他平台">其他平台</button>
+                                    </div>
+                                </div>
+                            </div>
+                          
+						  
+						    <div class="filter-row">
+    <div class="filter-item">
+        <span class="filter-label">交易来源：</span>
+        
+        <!-- 省平台下拉 -->
+        <select class="filter-select" id="tradeSource">
+            <option value="">不限</option>
+            <option value="省级">省级</option>
+            <option value="南京市">南京市</option>
+            <option value="无锡市">无锡市</option>
+            <option value="徐州市">徐州市</option>
+            <option value="常州市">常州市</option>
+            <option value="苏州市">苏州市</option>
+            <option value="南通市">南通市</option>
+            <option value="连云港市">连云港市</option>
+            <option value="淮安市">淮安市</option>
+            <option value="盐城市">盐城市</option>
+            <option value="扬州市">扬州市</option>
+            <option value="镇江市">镇江市</option>
+            <option value="泰州市">泰州市</option>
+            <option value="宿迁市">宿迁市</option>
+			  <!-- 其他平台下拉 -->
+			 <option value="JSTCC江苏招标电子交易平台系统">JSTCC江苏招标电子交易平台系统</option>
+            <option value="中招联合招标采购网">中招联合招标采购网</option>
+        </select>
+
+      
+    </div>
+</div>
+						  
+						  
+						  
+                            <!-- 第四行： 交易类型 -->
+                            <div class="filter-row" id="jytypefl">
+                                <div class="filter-item filter-item-type">
+                                    <span class="filter-label">交易类型：</span>
+                                    <div class="type-buttons" data-type="tradeType" id="ywtype">
+                                        <button class="type-btn active" value=""   data-value="003">不限</button>
+                                        <button class="type-btn"  value="jsgc"  data-value="003001">建设工程</button>
+                                        <button class="type-btn" value="jtgc" data-value="003002">交通工程</button>
+                                        <button class="type-btn" value="slgc" data-value="003003">水利工程</button>
+                                        <button class="type-btn" value="zfcg" data-value="003004">政府采购</button>
+                                        <button class="type-btn" value="tdky" data-value="003013">土地矿业交易</button>
+                                        <button class="type-btn" value="gycq" data-value="003006">国有产权</button>
+                                    </div>
+                                </div>
+                            </div>
+							
+						<div class="filter-row" id="xxtypefl" style="display:none;">
+                            
+							    <div class="filter-item filter-item-type">
+                                    <span class="filter-label">信息类型：</span>
+                                    <div class="type-buttons" id="xxtype" data-type="xxtype">
+                                        <button class="type-btn active" value=""   data-value="">不限</button>
+                                        
+										
+                                    </div>
+                                </div>
+								
+								
+                        </div>
+							
+							
+                            <!-- 第五行：搜索 -->
+                            <div class="filter-row">
+                                <div class="filter-item">
+                                    <span class="filter-label">搜索：</span>
+                                    <div class="search-box">
+                                        <input type="text" class="search-input" id="searchInput" placeholder="请输入关键词" />
+                                        <button class="search-btn" id="searchBtn">
+                                            <i class="search-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-main">
+                        <!-- 表格列表 -->
+                        <div class="table-list">
+                            <div class="table-header">
+                                <div class="table-col col-num">序号</div>
+                                <div class="table-col col-title">公告标题</div>
+                                <div class="table-col col-area" id="col-area">来源平台</div>
+                                <div class="table-col col-date">发布日期</div>
+                            </div>
+                            <div class="table-body"  id="showList" >
+                               
+                            
+							
+							</div>
+                        </div>
+
+                        <!-- 分页 -->
+                        <div class="pagination-wrapper">
+                            <div id="pager"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- footer -->
+        <div id="foot"></div>
+        <!-- 工具js -->
+       
+        <!-- 页面js -->
+    <script src="/js/lib/chosen/chosen.jquery.min.js"></script>
+    <script src="/js/lib/pagination/mricode.pagination.js"></script>
+    <script src="/js/lib/layuiV2.9.2/layui.js"></script>
+       
+	<script src="/js/webBuilderCommon.js"></script>
+	<script src="/js/lib/datepicker/bootstrap-datetimepicker.min.js"></script>
+	<script src="/js/lib/datepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+	<script src="/js/chosen.jquery.js"></script>
+    <script src="/js/common.js?1"></script>
+	<script src="/js/pageView1.js"></script>
+	<script src="/js/mustache.js"></script>
+	<script src="/js/lib/laydate/laydate.js"></script>
+    <script src="/js/transactionInformation.js?1"></script>
+	
+
+    <script type="text/template" id="showList-tmpl">
+		{{#items}}
+			
+			
+
+
+            <div class="table-row">
+                                    <div class="table-col col-num">{{index}}</div>
+                                    <div class="table-col col-title">
+                                        <a href="{{{linkurl}}}"  target="_blank"
+                                            ><span class="tag-top hidden">置顶</span> {{{title}}} </a
+                                        >
+                                    </div>
+                                    <div class="table-col col-area">
+                                        <span class="area-tag">{{fieldvalue}}</span>
+                                    </div>
+                                    <div class="table-col col-date">{{infodatepx}}</div>
+             </div>
+
+
+
+
+		{{/items}}
+
+
+	</script>
+
+
+
+    </body>
+</html>

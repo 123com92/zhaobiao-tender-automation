@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html><html><head><meta charset=utf-8><meta name=keywords content=æ±èçææ ææ å¬å±æå¡å¹³å°,ææ ææ å¬å±æå¡å¹³å°,æææ å¬å±æå¡å¹³å°,çµå­ææ ,çµå­æææ ,æ±èææ ,å¬å±æå¡å¹³å°,å¬å±å¹³å°,ææ å¬å,è¯æ å¬ç¤º,ä¸­æ å¬å,æææ æ³è§,è¡æ¿çç£,å¹³å°äºèï¼äºèç½+ï¼åºåé¾><meta name=description content=æ±èçææ ææ å¬å±æå¡å¹³å°ä¸»ç®¡é¨é¨ä¸ºæ±èçåå±æ¹é©å§ï¼è¿è¥ä¸»ä½ä¸ºæ±èçææ ä¸­å¿æéå¬å¸><title>æ±èçææ ææ å¬å±æå¡å¹³å°</title><link rel="shortcut icon" href=static/img/favicon.ico type=image/x-icon><link rel=stylesheet href=./static/css/common.css><script src="./static/js/call.js?t=111"></script><script src=./static/js/util.js></script><script>/**
+     * IE8ã9 ç­ä¸æ¯æ VUEJS å PDFJS
+     * æç¤ºç¨æ·æ´æ¢æµè§å¨
+     */
+    
+    var isOldIE = false;
+
+    var isIE = function(version) {
+      var b = document.createElement('b');
+      b.innerHTML = '<!--[if IE ' + version +  ']><i></i><![endif]-->';
+      return b.getElementsByTagName('i').length === 1;
+    };
+
+    (function() {
+      var versions = [5, 6, 7, 8, 9];
+
+      for (var i = 0, len = versions.length; i < len; i++) {
+        if (isIE(versions[i])) {
+          isOldIE = true;
+          break;
+        }
+      }
+    })();
+
+    if (isOldIE) {
+      // å¼¹çªæç¤ºç¨æ·ä¸è½½ç°ä»£æµè§å¨
+      alert('ç³»ç»æ£æµå°æ¨æ­£å¨ä½¿ç¨ie9ä»¥ä¸åæ ¸çæµè§å¨ï¼ä¸è½å®ç°å®ç¾ä½éªï¼è¯·æ´æ¢æåçº§æµè§å¨è®¿é®ï¼');
+    } else {
+      // é²æ­¢æ¬æ®µä»£ç æ¥éï¼å¯¼è´æµè§å¨å¡ä½ï¼ä¸é¢çæç¤ºä¿¡æ¯æ æ³æ¥åº
+      var modernBrowser = (
+        'fetch' in window &&
+        'assign' in Object
+      );
+
+      if ( !modernBrowser ) {
+        var scriptElement = document.createElement('script');
+
+        scriptElement.async = false;
+        scriptElement.src = 'static/js/polyfill.min.js';
+        document.head.appendChild(scriptElement);
+      }
+    }</script><link href=/static/css/app.2d5b6505d723d2e94454c50df76ccc04.css rel=stylesheet></head><body style="font-size: 12px; color: #4b4b4b; font-family: Microsoft YaHei;"><div id=app></div><div style="display: none;"><script>var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?f5b9bdde19559e7d521049ec442e5faf";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+      })();</script></div><script type=text/javascript src=/static/js/manifest.6fd3d55cde536709aab9.js></script><script type=text/javascript src=/static/js/vendor.26a2d8d27c7d6562d48c.js></script><script type=text/javascript src=/static/js/app.6fffb7911f95af937866.js></script></body></html>
